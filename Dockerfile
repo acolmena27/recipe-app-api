@@ -9,13 +9,26 @@ COPY ./app /app
 WORKDIR /app
 EXPOSE 8000
 
-# Install dependencies
-RUN apk add --no-cache gcc musl-dev python3-dev libffi-dev openssl-dev
+# Update repositories and install dependencies
+RUN apk update && apk add --no-cache \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    postgresql-client \
+    build-base \
+    postgresql-dev
 
 # Create a virtual environment and install dependencies
 RUN python -m venv /py
 RUN /py/bin/pip install --upgrade pip
+
+# Install Python dependencies
 RUN /py/bin/pip install -r /tmp/requirements.txt
+
+# Remove build dependencies
+RUN apk del build-base postgresql-dev
 
 # Add a non-root user and change ownership of the /app directory
 RUN adduser --disabled-password --no-create-home django-user && \
